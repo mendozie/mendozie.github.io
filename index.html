@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ предметной области и KPI для сервиса доставки еды</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --accent: #0d6efd;
+            --accent-hover: #0b5ed7;
+            --border: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --code-bg: #f8f9fa;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #1a1a1a;
+                --bg-secondary: #2d2d2d;
+                --text-primary: #ffffff;
+                --text-secondary: #b0b0b0;
+                --accent: #4dabf7;
+                --accent-hover: #339af0;
+                --border: #404040;
+                --shadow: rgba(0, 0, 0, 0.3);
+                --code-bg: #2d2d2d;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1rem;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .nav-menu a:hover {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .toc {
+            background-color: var(--bg-secondary);
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .toc h2 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .toc-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 0.5rem;
+            list-style: none;
+        }
+
+        .toc-list a {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.75rem;
+            background-color: var(--bg-primary);
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            display: block;
+        }
+
+        .toc-list a:hover {
+            background-color: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+
+        main {
+            display: flex;
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .sidebar {
+            width: 250px;
+            position: sticky;
+            top: 120px;
+            height: fit-content;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .sidebar h3 {
+            margin-bottom: 1rem;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 0;
+            display: block;
+            border-left: 3px solid transparent;
+            padding-left: 1rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+            background-color: var(--bg-primary);
+            margin-left: -1rem;
+            padding-left: 1rem;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            color: var(--text-primary);
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.3rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .hypothesis {
+            margin-bottom: 1.5rem;
+        }
+
+        details {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        summary {
+            padding: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: var(--bg-secondary);
+            border-radius: 4px 4px 0 0;
+            transition: background-color 0.2s;
+        }
+
+        summary:hover {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        details[open] summary {
+            border-radius: 4px 4px 0 0;
+        }
+
+        .hypothesis-content {
+            padding: 1rem;
+        }
+
+        .hypothesis-section {
+            margin-bottom: 1rem;
+        }
+
+        .hypothesis-section h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .kpi-controls {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-width: 250px;
+        }
+
+        .toggle-button {
+            padding: 0.5rem 1rem;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .toggle-button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--bg-primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--bg-secondary);
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        th::after {
+            content: " ↕";
+            opacity: 0.5;
+        }
+
+        th.sort-asc::after {
+            content: " ↑";
+            opacity: 1;
+        }
+
+        th.sort-desc::after {
+            content: " ↓";
+            opacity: 1;
+        }
+
+        tr:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        code {
+            background-color: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .analysis-note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            font-weight: bold;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .analysis-note {
+                background-color: #3d3d00;
+                border-color: #666600;
+                color: #ffff99;
+            }
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px var(--shadow);
+            transition: all 0.2s;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            main {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+
+            .kpi-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: auto;
+            }
+        }
+
+        @media print {
+            header, .sidebar, .back-to-top, .kpi-controls {
+                display: none !important;
+            }
+
+            main {
+                flex-direction: column;
+            }
+
+            section {
+                break-inside: avoid;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                border: 1px solid #000;
+            }
+
+            body {
+                background: white;
+                color: black;
+            }
+
+            a {
+                color: black;
+                text-decoration: underline;
+            }
+
+            .table-container {
+                overflow: visible;
+            }
+
+            table {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Аналитический отчёт</div>
+                <nav>
+                    <ul class="nav-menu">
+                        <li><a href="#resume">Резюме</a></li>
+                        <li><a href="#introduction">Введение</a></li>
+                        <li><a href="#hypotheses">Гипотезы</a></li>
+                        <li><a href="#kpi">KPI</a></li>
+                        <li><a href="#analysis">Анализ</a></li>
+                        <li><a href="#recommendations">Рекомендации</a></li>
+                        <li><a href="#conclusion">Заключение</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="toc">
+        <div class="container">
+            <h2>Краткое оглавление</h2>
+            <ul class="toc-list">
+                <li><a href="#resume">Резюме (Аннотация)</a></li>
+                <li><a href="#introduction">Введение</a></li>
+                <li><a href="#hypotheses">Бизнес-задачи и гипотезы</a></li>
+                <li><a href="#kpi">Система показателей (KPI)</a></li>
+                <li><a href="#analysis">Анализ и интерпретация</a></li>
+                <li><a href="#recommendations">Рекомендации и решения</a></li>
+                <li><a href="#conclusion">Заключение</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <main>
+            <aside class="sidebar">
+                <h3>Навигация</h3>
+                <ul class="sidebar-nav">
+                    <li><a href="#resume" class="nav-link">Резюме (Аннотация)</a></li>
+                    <li><a href="#introduction" class="nav-link">Введение</a></li>
+                    <li><a href="#hypotheses" class="nav-link">Бизнес-задачи и гипотезы</a></li>
+                    <li><a href="#kpi" class="nav-link">Система показателей (KPI)</a></li>
+                    <li><a href="#analysis" class="nav-link">Анализ и интерпретация</a></li>
+                    <li><a href="#recommendations" class="nav-link">Рекомендации и решения</a></li>
+                    <li><a href="#conclusion" class="nav-link">Заключение</a></li>
+                </ul>
+            </aside>
+
+            <div class="content">
+                <section id="resume">
+                    <h2>Резюме (Аннотация)</h2>
+                    <p>В работе проведён экспресс-анализ индустрии онлайн-доставки еды с фокусом на ключевые показатели эффективности (KPI) сервиса-агрегатора. Рассмотрены роли участников экосистемы (агрегатор, рестораны/магазины, курьеры, клиенты) и выявлены 3 приоритетные бизнес-проблемы: низкое удержание клиентов (отток после первого заказа), несоблюдение обещанного времени доставки (опоздания) и низкая маржинальность заказов.</p>
+                    
+                    <p>Для каждой проблемы предложены метрики-«сигналы» и гипотезы о причинах. Сформирована система KPI, включающая финансовые показатели (например, GMV, средний чек, take rate, contribution margin), метрики удержания (LTV, повторные заказы, ретеншен по когортам), операционные метрики качества (точность ETA, % вовремя, отмены, выполнения заказа) и эффективность логистики (загрузка курьеров, холостой пробег).</p>
+                    
+                    <p>На основе модели юнит-экономики показано, как ухудшение ретеншена или точности доставки негативно влияют на LTV и прибыльность, и наоборот - оптимизация этих показателей улучшит окупаемость. Бизнес-цель анализа - найти точки роста: повысить удержание и LTV клиентов, увеличить маржинальность на заказ и снизить долю опозданий, отмен и связанных издержек.</p>
+                </section>
+
+                <section id="introduction">
+                    <h2>Введение</h2>
+                    <p>Цель аналитической работы - проверить навык быстрого погружения в новую предметную область, умение выбрать релевантные метрики и на их основе сформулировать бизнес-гипотезы. Отчёт посвящён сервису онлайн-доставки еды (типичный агрегатор, работающий в крупном городе, например Москве). Ниже описано, как устроен такой сервис, какие процессы и участники в него вовлечены, и за счёт чего формируется выручка.</p>
+
+                    <h3>Предметная область агрегатора доставки еды</h3>
+                    <p>Агрегатор соединяет клиентов, рестораны или магазины и курьеров на единой платформе. Клиент через приложение просматривает меню разных ресторанов или товары дарк-сторов (специализированных склад-магазинов без зала), собирает заказ и оплачивает онлайн. За кулисами заказ поступает в систему ресторана/дарк-стора для подготовки, затем назначается курьер, который забирает готовый заказ и доставляет клиенту.</p>
+
+                    <h3>Основные роли участников</h3>
+                    <ul>
+                        <li><strong>Клиент:</strong> заказывает еду или продукты с доставкой на дом, ожидает широкий выбор, быструю доставку, приемлемую цену доставки и качество сервиса.</li>
+                        <li><strong>Ресторан или дарк-стор:</strong> готовит блюда или собирает заказ продуктов. Интересы - получать дополнительный поток заказов от агрегатора, выдерживать стандарты времени приготовления и качества, уплачивая агрегатору комиссию.</li>
+                        <li><strong>Курьер:</strong> обычно на гибком контракте, отвечает за своевременный вывоз и доставку. Интересы - стабильный заработок (оплата за заказ, бонусы в часы пик), оптимальный маршрут без простоев.</li>
+                        <li><strong>Агрегатор:</strong> техническая платформа, которая привлекает клиентов, предоставляет ресторанам заказы, координирует доставку через курьеров. Агрегатор управляет приложением, платёжной системой, поддержкой клиентов и партнёров, логистическим трекингом.</li>
+                    </ul>
+
+                    <h3>Источники выручки агрегатора</h3>
+                    <p>Основная бизнес-модель - комиссия (take rate) с каждого заказа. Ресторан платит агрегатору комиссию порядка 10-35% от суммы заказа за привлечение клиента и организацию доставки. Кроме того, агрегатор может взимать плату за доставку с клиента (которая либо идёт на оплату услуг курьера, либо частично остаётся как доход агрегатора).</p>
+                    
+                    <p>Некоторые сервисы внедряют подписку (например, фиксированная ежемесячная плата за бесплатную доставку или скидки) - это создаёт дополнительный источник выручки и повышает лояльность. Дополнительно агрегаторы могут получать доход от рекламы и продвижения: рестораны платят за приоритетное размещение в приложении, за участие в акциях или спецразмещение.</p>
+
+                    <h3>Модель монетизации и юнит-экономика</h3>
+                    <p>Агрегатор зарабатывает на комиссии с заказа и плате за доставку, но несёт переменные затраты на исполнение. Каждая доставка имеет себестоимость: оплата курьеру (чаще сдельная за заказ + надбавки за расстояние или пиковое время), затраты на обработку платежей, поддержку (если клиент обращается), промо-скидки, которые субсидирует агрегатор, и т.д.</p>
+                    
+                    <p><strong>Contribution margin</strong> на заказ - ключевой показатель прибыльности: это выручка агрегатора с заказа минус переменные издержки на этот заказ. Положительный contribution margin означает, что каждый дополнительный заказ вносит вклад в покрытие постоянных издержек (маркетинг, штаб-квартира, разработка и др.), приближая бизнес к операционной прибыли.</p>
+                </section>
+
+                <section id="hypotheses">
+                    <h2>Бизнес-задачи и гипотезы</h2>
+                    <div class="kpi-controls">
+                        <button class="toggle-button" onclick="toggleAllHypotheses()">Свернуть/развернуть все гипотезы</button>
+                    </div>
+                    
+                    <p>Ниже сформулированы три ключевые проблемы агрегатора доставки еды, каждая с гипотезой о причинах и указанием метрик, по которым можно судить о наличии проблемы. Также описано, как эта проблема отражается на юнит-экономике.</p>
+
+                    <div class="hypothesis">
+                        <details>
+                            <summary>Гипотеза 1 - Отток клиентов после первого заказа (низкое повторное использование)</summary>
+                            <div class="hypothesis-content">
+                                <div class="hypothesis-section">
+                                    <h4>Боль бизнеса</h4>
+                                    <p>Большая доля новых пользователей не возвращается за повторными заказами. Несмотря на высокие расходы на маркетинг и промо для привлечения, клиент совершает 1-2 заказа и «исчезает». Это ведёт к растущему CAC на активного клиента и упущенному потенциалу выручки.</p>
+                                    <p>Предполагаемые причины: неудовлетворённость опытом (долгая доставка, ошибки в заказе), отсутствие лояльности (конкуренты переманивают скидками), или низкая потребность (например, заказы были ситуативны). Возможно, сервис не удерживает клиентов из-за отсутствия программы лояльности или персонализированных акций для повторного заказа.</p>
+                                </div>
+                                
+                                <div class="hypothesis-section">
+                                    <h4>Метрики-сигналы</h4>
+                                    <ul>
+                                        <li>Коэффициент удержания (Retention rate) для новых когорт - какой процент клиентов делает повторный заказ через 30, 90 дней</li>
+                                        <li>Churn Rate (месячный отток) - доля клиентов, не совершивших ни одного заказа за последний месяц</li>
+                                        <li>Средняя частота заказов на клиента (orders per user в месяц)</li>
+                                        <li>Доля клиентов с >=2 заказами</li>
+                                        <li>NPS (Net Promoter Score) и оценки в отзывах</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="hypothesis-section">
+                                    <h4>Влияние на юнит-экономику</h4>
+                                    <p>Высокий отток означает короткий lifetime клиента и низкий LTV. Если, например, ежемесячный churn составляет 15%, то месячная ретеншен ~85%, а за год от первоначальной когорты активными остаются лишь ~14% (0,85^12 ≈ 0,14). Это резко снижает LTV и означает, что значительная часть затрат на привлечение (~CAC) не окупается.</p>
+                                    <p>Гипотеза - улучшение удержания (например, через программу лояльности, качество сервиса) напрямую повысит LTV и снизит долю маркетинговых расходов в расчёте на полученный рубль.</p>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="hypothesis">
+                        <details>
+                            <summary>Гипотеза 2 - Низкая точность ETA и опоздания курьеров</summary>
+                            <div class="hypothesis-content">
+                                <div class="hypothesis-section">
+                                    <h4>Боль бизнеса</h4>
+                                    <p>Заявленное время доставки часто не соответствует фактическому. Например, приложение обещало 30 минут, а по факту курьер прибыл через 45. Либо заказ вообще опаздывает сверх оговорённого интервала. Для клиента это критично - горячая еда остывает, планы нарушаются.</p>
+                                    <p>Возможные причины: несовершенная модель ETA (не учтены пробки, пиковые часы, загруженность ресторанов), дефицит курьеров в часы пик, задержки на кухне ресторана сверх нормы, или неэффективная маршрутизация.</p>
+                                </div>
+                                
+                                <div class="hypothesis-section">
+                                    <h4>Метрики-сигналы</h4>
+                                    <ul>
+                                        <li>On-time delivery rate - процент заказов, доставленных вовремя или раньше обещанного срока (ETA)</li>
+                                        <li>Average delay - среднее время опоздания по просроченным доставкам</li>
+                                        <li>Accuracy of ETA - точность прогноза времени</li>
+                                        <li>Cancellation rate - доля отмен клиентами из-за долгого ожидания</li>
+                                        <li>Contact Rate в поддержку по теме опозданий</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="hypothesis-section">
+                                    <h4>Влияние на юнит-экономику</h4>
+                                    <p>Низкая точность ETA бьёт по удовлетворённости и приводит к оттоку. Даже один негативный опыт (сильно опоздавший заказ) может оттолкнуть нового пользователя от повторных заказов. Кроме того, опоздания генерируют дополнительные издержки: растёт число обращений в поддержку и требуются компенсации.</p>
+                                    <p>Если on-time rate падает с 92% до 86%, то при 100 000 заказов в месяц количество опозданий вырастает с 8 000 до 14 000 (+6 000 случаев). Эти 6 тысяч задержек - это тысячи потенциально недовольных клиентов.</p>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="hypothesis">
+                        <details>
+                            <summary>Гипотеза 3 - Низкая маржинальность и дорогая доставка (экономика заказа не сходится)</summary>
+                            <div class="hypothesis-content">
+                                <div class="hypothesis-section">
+                                    <h4>Боль бизнеса</h4>
+                                    <p>Агрегатор либо зарабатывает крайне мало с каждого заказа, либо вообще субсидирует доставки, оставаясь в минусе на уровне unit-экономики. Признак - отрицательный или около нулевой contribution margin на заказ.</p>
+                                    <p>Возможные причины: высокие издержки на доставку (курьеры простаивают в ожидании заказов), чрезмерные скидки и промоакции, низкий средний чек и комиссия, общий дисбаланс юнит-экономики.</p>
+                                </div>
+                                
+                                <div class="hypothesis-section">
+                                    <h4>Метрики-сигналы</h4>
+                                    <ul>
+                                        <li>Contribution margin на заказ - сколько рублей прибыли приносит в среднем один заказ</li>
+                                        <li>Take Rate (комиссия агрегатора) - если она низкая (<20%), это ограничивает доход с заказа</li>
+                                        <li>Average Delivery Cost per Order - средняя стоимость логистики на заказ</li>
+                                        <li>Доля заказов с промо и средний размер промо в рублях на заказ</li>
+                                        <li>CAC и Payback Period</li>
+                                        <li>Utilization Rate курьеров</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="hypothesis-section">
+                                    <h4>Влияние на юнит-экономику</h4>
+                                    <p>Низкая маржинальность означает, что бизнес не может выйти на прибыль при текущих показателях. Чувствительность прибыли к изменениям параметров очень высокая. Например, если себестоимость доставки вырастает всего на 5% (+10 руб. на единицу), чистая ценность клиента может упасть на 75%.</p>
+                                    <p>Это структурный риск модели "доставка еды": в среднем невысокий чек и невозможность агрегировать несколько доставок в один маршрут приводят к тому, что один курьер = одна доставка = одна оплата.</p>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </section>
+
+                <section id="kpi">
+                    <h2>Система показателей (KPI)</h2>
+                    <div class="kpi-controls">
+                        <input type="text" id="kpiSearch" class="search-box" placeholder="Поиск по таблице KPI...">
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="kpiTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable(0)">Название показателя</th>
+                                    <th onclick="sortTable(1)">Категория</th>
+                                    <th onclick="sortTable(2)">Зачем нужен</th>
+                                    <th onclick="sortTable(3)">Связь с гипотезами</th>
+                                    <th onclick="sortTable(4)">Формула и единицы</th>
+                                    <th onclick="sortTable(5)">Источники данных</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>GMV (Gross Merchandise Value)</td>
+                                    <td>Финансовые</td>
+                                    <td>Общий объём транзакций через платформу</td>
+                                    <td>Все гипотезы</td>
+                                    <td><code>Сумма всех заказов, руб.</code></td>
+                                    <td>Платёжная система</td>
+                                </tr>
+                                <tr>
+                                    <td>Take Rate</td>
+                                    <td>Финансовые</td>
+                                    <td>Доля комиссии агрегатора с каждого заказа</td>
+                                    <td>Гипотеза 3</td>
+                                    <td><code>Комиссия / GMV * 100%</code></td>
+                                    <td>Финансовая отчётность</td>
+                                </tr>
+                                <tr>
+                                    <td>AOV (Average Order Value)</td>
+                                    <td>Финансовые</td>
+                                    <td>Средний размер заказа</td>
+                                    <td>Гипотеза 3</td>
+                                    <td><code>GMV / Количество заказов, руб.</code></td>
+                                    <td>Система заказов</td>
+                                </tr>
+                                <tr>
+                                    <td>Contribution Margin</td>
+                                    <td>Финансовые</td>
+                                    <td>Прибыль с заказа после переменных затрат</td>
+                                    <td>Гипотеза 3</td>
+                                    <td><code>Выручка с заказа - Переменные затраты, руб.</code></td>
+                                    <td>Финансовая аналитика</td>
+                                </tr>
+                                <tr>
+                                    <td>LTV (Lifetime Value)</td>
+                                    <td>Удержание</td>
+                                    <td>Общая ценность клиента за весь период</td>
+                                    <td>Гипотеза 1</td>
+                                    <td><code>AOV * Частота заказов * Lifetime, руб.</code></td>
+                                    <td>CRM, аналитика</td>
+                                </tr>
+                                <tr>
+                                    <td>CAC (Customer Acquisition Cost)</td>
+                                    <td>Удержание</td>
+                                    <td>Стоимость привлечения одного клиента</td>
+                                    <td>Гипотеза 1</td>
+                                    <td><code>Маркетинговые расходы / Новые клиенты, руб.</code></td>
+                                    <td>Маркетинг, финансы</td>
+                                </tr>
+                                <tr>
+                                    <td>Retention Rate</td>
+                                    <td>Удержание</td>
+                                    <td>Доля клиентов, вернувшихся за период</td>
+                                    <td>Гипотеза 1</td>
+                                    <td><code>Повторные клиенты / Всего клиентов * 100%</code></td>
+                                    <td>CRM система</td>
+                                </tr>
+                                <tr>
+                                    <td>Churn Rate</td>
+                                    <td>Удержание</td>
+                                    <td>Доля клиентов, покинувших сервис</td>
+                                    <td>Гипотеза 1</td>
+                                    <td><code>Ушедшие клиенты / Всего клиентов * 100%</code></td>
+                                    <td>CRM система</td>
+                                </tr>
+                                <tr>
+                                    <td>On-time Delivery Rate</td>
+                                    <td>Операционные</td>
+                                    <td>Доля заказов, доставленных вовремя</td>
+                                    <td>Гипотеза 2</td>
+                                    <td><code>Вовремя доставлено / Всего заказов * 100%</code></td>
+                                    <td>Логистическая система</td>
+                                </tr>
+                                <tr>
+                                    <td>ETA Accuracy</td>
+                                    <td>Операционные</td>
+                                    <td>Точность прогноза времени доставки</td>
+                                    <td>Гипотеза 2</td>
+                                    <td><code>|Факт - Прогноз| / Прогноз * 100%</code></td>
+                                    <td>Логистическая система</td>
+                                </tr>
+                                <tr>
+                                    <td>Average Delivery Time</td>
+                                    <td>Операционные</td>
+                                    <td>Среднее время доставки</td>
+                                    <td>Гипотеза 2</td>
+                                    <td><code>Сумма времени доставок / Количество, мин.</code></td>
+                                    <td>GPS трекинг</td>
+                                </tr>
+                                <tr>
+                                    <td>Cancellation Rate</td>
+                                    <td>Операционные</td>
+                                    <td>Доля отменённых заказов</td>
+                                    <td>Гипотеза 2</td>
+                                    <td><code>Отменённые заказы / Всего заказов * 100%</code></td>
+                                    <td>Система заказов</td>
+                                </tr>
+                                <tr>
+                                    <td>Courier Utilization Rate</td>
+                                    <td>Логистика</td>
+                                    <td>Загруженность курьеров заказами</td>
+                                    <td>Гипотеза 3</td>
+                                    <td><code>Время с заказами / Общее время смены * 100%</code></td>
+                                    <td>Система диспетчеризации</td>
+                                </tr>
+                                <tr>
+                                    <td>Cost per Delivery</td>
+                                    <td>Логистика</td>
+                                    <td>Средняя стоимость одной доставки</td>
+                                    <td>Гипотеза 3</td>
+                                    <td><code>Общие затраты на логистику / Количество доставок, руб.</code></td>
+                                    <td>Финансовая система</td>
+                                </tr>
+                                <tr>
+                                    <td>NPS (Net Promoter Score)</td>
+                                    <td>Качество</td>
+                                    <td>Готовность клиентов рекомендовать сервис</td>
+                                    <td>Гипотеза 1, 2</td>
+                                    <td><code>% Промоутеров - % Детракторов</code></td>
+                                    <td>Опросы клиентов</td>
+                                </tr>
+                                <tr>
+                                    <td>CSAT (Customer Satisfaction)</td>
+                                    <td>Качество</td>
+                                    <td>Удовлетворённость клиентов сервисом</td>
+                                    <td>Гипотеза 1, 2</td>
+                                    <td><code>Средняя оценка по шкале 1-5</code></td>
+                                    <td>Система отзывов</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="analysis">
+                    <h2>Анализ и интерпретация</h2>
+                    <div class="analysis-note">
+                        ⚠️ Смоделированный анализ
+                    </div>
+                    
+                    <p>На основе типичных показателей индустрии доставки еды проведён модельный анализ влияния ключевых метрик на экономику агрегатора. Рассмотрены три сценария: базовый, оптимистичный и пессимистичный.</p>
+
+                    <h3>Базовый сценарий (текущее состояние)</h3>
+                    <ul>
+                        <li>Средний чек (AOV): 800 руб.</li>
+                        <li>Take rate: 25%</li>
+                        <li>Выручка с заказа: 200 руб.</li>
+                        <li>Стоимость доставки: 120 руб.</li>
+                        <li>Contribution margin: 80 руб.</li>
+                        <li>On-time delivery rate: 88%</li>
+                        <li>Retention rate (30 дней): 35%</li>
+                        <li>CAC: 1 200 руб.</li>
+                        <li>LTV: 2 400 руб.</li>
+                    </ul>
+
+                    <h3>Оптимистичный сценарий (после оптимизации)</h3>
+                    <p>При улучшении ключевых показателей:</p>
+                    <ul>
+                        <li>On-time delivery rate: 95% (+7 п.п.)</li>
+                        <li>Retention rate: 50% (+15 п.п.)</li>
+                        <li>Снижение стоимости доставки до 100 руб. (-20 руб.)</li>
+                        <li>Contribution margin: 100 руб. (+25%)</li>
+                        <li>LTV: 4 000 руб. (+67%)</li>
+                        <li>Payback period: 12 заказов вместо 15</li>
+                    </ul>
+
+                    <h3>Пессимистичный сценарий (ухудшение показателей)</h3>
+                    <p>При снижении качества сервиса:</p>
+                    <ul>
+                        <li>On-time delivery rate: 80% (-8 п.п.)</li>
+                        <li>Retention rate: 25% (-10 п.п.)</li>
+                        <li>Рост стоимости доставки до 140 руб. (+20 руб.)</li>
+                        <li>Contribution margin: 60 руб. (-25%)</li>
+                        <li>LTV: 1 500 руб. (-38%)</li>
+                        <li>Payback period: 20 заказов вместо 15</li>
+                    </ul>
+
+                    <h3>Ключевые выводы анализа</h3>
+                    <p>Моделирование показывает критическую важность операционных показателей для финансовых результатов. Улучшение on-time delivery rate на 7 процентных пунктов и retention rate на 15 п.п. приводит к росту LTV на 67%. Напротив, ухудшение этих показателей может снизить LTV на 38%, что делает бизнес-модель нежизнеспособной.</p>
+                    
+                    <p>Особенно критичным является влияние retention rate: каждые 5 процентных пунктов улучшения удержания увеличивают LTV примерно на 20-25%. Это объясняется экспоненциальным характером удержания клиентов - небольшие улучшения в ретеншене дают значительный эффект в долгосрочной перспективе.</p>
+                </section>
+
+                <section id="recommendations">
+                    <h2>Рекомендации и возможные решения</h2>
+                    
+                    <h3>1. Повышение удержания клиентов</h3>
+                    <ul>
+                        <li><strong>Целевой KPI:</strong> Retention rate 30 дней - с 35% до 50%</li>
+                        <li><strong>Способ измерения:</strong> Когортный анализ по месяцам регистрации</li>
+                        <li><strong>Ожидаемый эффект:</strong> Рост LTV на 40-50%</li>
+                        <li><strong>Решения:</strong>
+                            <ul>
+                                <li>Программа лояльности с накопительными баллами</li>
+                                <li>Персонализированные push-уведомления</li>
+                                <li>Промокоды для повторных заказов в первые 7 дней</li>
+                                <li>Улучшение onboarding новых пользователей</li>
+                            </ul>
+                        </li>
+                        <li><strong>Риски:</strong> Увеличение операционных расходов на промо, сложность персонализации</li>
+                    </ul>
+
+                    <h3>2. Оптимизация точности доставки</h3>
+                    <ul>
+                        <li><strong>Целевой KPI:</strong> On-time delivery rate - с 88% до 95%</li>
+                        <li><strong>Способ измерения:</strong> Ежедневный мониторинг отклонений от ETA</li>
+                        <li><strong>Ожидаемый эффект:</strong> Снижение churn rate на 3-5 п.п.</li>
+                        <li><strong>Решения:</strong>
+                            <ul>
+                                <li>Улучшение алгоритмов расчёта ETA с учётом пробок</li>
+                                <li>Динамическое управление флотом курьеров</li>
+                                <li>Буферное время для непредвиденных задержек</li>
+                                <li>Интеграция с системами ресторанов для отслеживания готовности</li>
+                            </ul>
+                        </li>
+                        <li><strong>Риски:</strong> Технические сложности интеграции, сопротивление партнёров</li>
+                    </ul>
+
+                    <h3>3. Улучшение юнит-экономики</h3>
+                    <ul>
+                        <li><strong>Целевой KPI:</strong> Contribution margin - с 80 до 120 руб. на заказ</li>
+                        <li><strong>Способ измерения:</strong> Еженедельный расчёт маржинальности по регионам</li>
+                        <li><strong>Ожидаемый эффект:</strong> Рост прибыльности на 50%</li>
+                        <li><strong>Решения:</strong>
+                            <ul>
+                                <li>Оптимизация маршрутов и загрузки курьеров</li>
+                                <li>Динамическое ценообразование в зависимости от спроса</li>
+                                <li>Сокращение неэффективных промоакций</li>
+                                <li>Увеличение среднего чека через рекомендации</li>
+                            </ul>
+                        </li>
+                        <li><strong>Риски:</strong> Снижение конкурентоспособности при росте цен, сложность балансировки</li>
+                    </ul>
+
+                    <h3>4. Приоритизация инициатив</h3>
+                    <p>Рекомендуется начать с оптимизации точности доставки, так как это влияет на все остальные метрики. Затем внедрить программу лояльности для удержания клиентов. Оптимизацию юнит-экономики проводить параллельно, но осторожно, чтобы не навредить клиентскому опыту.</p>
+                </section>
+
+                <section id="conclusion">
+                    <h2>Заключение</h2>
+                    <p>Проведённый анализ выявил три критические области для улучшения в агрегаторе доставки еды: удержание клиентов, точность доставки и маржинальность заказов. Все эти проблемы взаимосвязаны и требуют комплексного подхода к решению.</p>
+                    
+                    <p>Ключевым выводом является то, что операционные показатели (такие как on-time delivery rate) напрямую влияют на финансовые результаты через механизм удержания клиентов. Улучшение качества сервиса на 5-10% может привести к росту LTV на 40-50%, что кардинально меняет экономику бизнеса.</p>
+                    
+                    <p>Предложенная система KPI позволяет отслеживать все ключевые аспекты бизнеса и своевременно выявлять проблемы. Особое внимание следует уделить когортному анализу удержания и мониторингу операционных метрик в реальном времени.</p>
+                    
+                    <p>Успешная реализация рекомендаций может привести к значительному улучшению показателей: retention rate до 50%, on-time delivery rate до 95%, и contribution margin до 120 рублей на заказ. Это обеспечит устойчивый рост и конкурентные преимущества на рынке доставки еды.</p>
+                    
+                    <p>Дальнейшие исследования должны сосредоточиться на более детальном анализе поведения пользователей, A/B тестировании предложенных решений и разработке предиктивных моделей для прогнозирования churn rate и LTV.</p>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <button class="back-to-top" onclick="scrollToTop()">↑</button>
+
+    <script>
+        // Navigation highlighting
+        function updateActiveNav() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Back to top button
+        function toggleBackToTop() {
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.scrollY > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Hypothesis toggle functionality
+        function toggleAllHypotheses() {
+            const details = document.querySelectorAll('#hypotheses details');
+            const anyOpen = Array.from(details).some(detail => detail.open);
+            
+            details.forEach(detail => {
+                detail.open = !anyOpen;
+            });
+        }
+
+        // Table search functionality
+        function setupTableSearch() {
+            const searchInput = document.getElementById('kpiSearch');
+            const table = document.getElementById('kpiTable');
+            const rows = table.getElementsByTagName('tr');
+
+            searchInput.addEventListener('input', function() {
+                const filter = this.value.toLowerCase();
+                
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    const cells = row.getElementsByTagName('td');
+                    let found = false;
+                    
+                    for (let j = 0; j < cells.length; j++) {
+                        if (cells[j].textContent.toLowerCase().includes(filter)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    
+                    row.style.display = found ? '' : 'none';
+                }
+            });
+        }
+
+        // Table sorting functionality
+        let sortDirection = {};
+
+        function sortTable(columnIndex) {
+            const table = document.getElementById('kpiTable');
+            const tbody = table.getElementsByTagName('tbody')[0];
+            const rows = Array.from(tbody.getElementsByTagName('tr'));
+            const headers = table.getElementsByTagName('th');
+            
+            // Reset all header classes
+            for (let header of headers) {
+                header.classList.remove('sort-asc', 'sort-desc');
+            }
+            
+            // Determine sort direction
+            const currentDirection = sortDirection[columnIndex] || 'asc';
+            const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+            sortDirection[columnIndex] = newDirection;
+            
+            // Add appropriate class to current header
+            headers[columnIndex].classList.add(newDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+            
+            // Sort rows
+            rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].textContent.trim();
+                const bText = b.cells[columnIndex].textContent.trim();
+                
+                // Try to parse as numbers
+                const aNum = parseFloat(aText.replace(/[^\d.-]/g, ''));
+                const bNum = parseFloat(bText.replace(/[^\d.-]/g, ''));
+                
+                let comparison;
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    comparison = aNum - bNum;
+                } else {
+                    comparison = aText.localeCompare(bText, 'ru');
+                }
+                
+                return newDirection === 'asc' ? comparison : -comparison;
+            });
+            
+            // Reorder rows in DOM
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Event listeners
+        window.addEventListener('scroll', () => {
+            updateActiveNav();
+            toggleBackToTop();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTableSearch();
+            updateActiveNav();
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
